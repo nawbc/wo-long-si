@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-import { app, BrowserWindow, Tray, Menu, screen, session } from 'electron';
+import { app, BrowserWindow, Tray, Menu, screen, session, dialog } from 'electron';
 import { CPP, WinWin } from 'win-win-api';
-const { SetWindowPos, GetDesktopWindow, SetParent } = new WinWin().user32();
+// const { SetWindowPos, GetDesktopWindow, SetParent } = new WinWin().user32();
 
 // const icon = require('./icons/png/16x16.png');
 import { resolve } from 'path';
 
-import { bufferCastInt32 } from './utils';
+// import { bufferCastInt32 } from './utils';
 
+const isProduction = process.env.NODE_ENV  === 'production';
 declare const MAIN_WINDOW_WEBPACK_ENTRY: any;
 let tray: Tray;
 let mainWindow: BrowserWindow;
@@ -33,7 +34,7 @@ const createWindow = (): void => {
   mainWindow = new BrowserWindow({
     minHeight: 160,
     minWidth: 200,
-    maxHeight: height - 40,
+    maxHeight: height - 20,
     maxWidth: width - 40,
     transparent: true,
     frame: false,
@@ -47,14 +48,20 @@ const createWindow = (): void => {
     }
   });
 
-
   session.defaultSession.webRequest.onBeforeSendHeaders({ urls: ['*://*.hdslb.com/*'] }, (details, callback) => {
     details.requestHeaders['Referer'] = 'https://www.bilibili.com/';
     callback({ requestHeaders: details.requestHeaders });
   });
 
+  // mainWindow.loadFile(MAIN_WINDOW_WEBPACK_ENTRY)
   console.log(MAIN_WINDOW_WEBPACK_ENTRY);
-
+  dialog.showMessageBox({
+    type:'info',
+    title: 'message',
+    message: MAIN_WINDOW_WEBPACK_ENTRY,
+    buttons:['ok','cancel']
+  })
+  
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
 
   // const mainHwnd = bufferCastInt32(mainWindow.getNativeWindowHandle());
@@ -67,7 +74,6 @@ const createWindow = (): void => {
     mainWindow.show();
   });
 
-
   mainWindow.webContents.openDevTools({
     mode: 'detach'
   });
@@ -79,7 +85,6 @@ const createWindow = (): void => {
     mainWindow.webContents.executeJavaScript(`localStorage.setItem('windowSize', [${width}, ${height}])`);
   });
 
-
   mainWindow.setAlwaysOnTop(true, 'main-menu');
 
   mainWindow.webContents
@@ -88,12 +93,14 @@ const createWindow = (): void => {
       if (result) {
         const [w, h] = result.split(',');
         mainWindow.setSize(parseFloat(w), parseFloat(h));
+      } else { 
+        mainWindow.setSize(308, 268);
       }
-      // mainWindow.setSize()
     });
 
 
-  tray = new Tray(resolve(__dirname, './icons/png/16x16.png'));
+  console.log(app.getAppPath())
+  tray = new Tray(resolve(app.getAppPath(), '.webpack/main/icons/png/16x16.png'));
 
   const contextMenu = Menu.buildFromTemplate([
     {

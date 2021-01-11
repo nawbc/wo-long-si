@@ -71,8 +71,17 @@ body {
 .stage {
   height: 30px;
   flex-grow: 1;
-  /* background-color: #73c8e54f; */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
+
+.basic-info-wrapper{
+  display: flex;
+  align-items: center;
+  flex-grow: 1;
+}
+
 
 .bilibili {
   width: 26vw;
@@ -82,6 +91,66 @@ body {
   background-color: #fb7299;
 }
 
-.c {
-  font-size: 2rem;
+
+.level span{
+  
+  font-size: 0.7rem;
+  display: inline-block;
+  background-color: #11ab11;
+  padding: 0px 4px;
+}
+
+.videos{
+  flex-grow: 100;
+  width: 100vw;
+  height: 100%;
+}
+
+.scroll-view{
+  width: 100vw;
+  height: 100%;
+  overflow: hidden;
+}
+
+.scroll-view-tmp{
+  overflow-y: scroll;
+  overflow-x: hidden;
+  height: 100%;
+  width: 110vw;
+}
+
+.content{
+  height: 100%;
+  padding-bottom: 60px;
+}
+
+.video-item{
+  /* height: 5rem; */
+  width: 100vw;
+  align-items: center;
+  display: flex;
+  padding: 8px;
+}
+
+.video-cover{
+  min-height: 4rem;
+  min-width: 4rem;
+  margin-right: 10px;
+  margin-top: 5px;
+  align-self: flex-start;
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+.video-content{
+  display: flex;
+  flex-direction: column;
+  margin-right: 16px;
+  width: 100%;
+}
+
+.video-info{
+  margin-top: 10px;
+  display: inline-flex;
+  justify-content: space-between;
 }

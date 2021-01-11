@@ -23,7 +23,7 @@
 .icon-locker {
   width: 15px;
   height: 15px;
-  -webkit-mask-image: url(./assets/lock-black-18dp.svg);
+  -webkit-mask-image: url(./assets/lock-a.svg);
   -webkit-mask-size: cover;
   background-color: rgba(255, 255, 255, 0.6);
 }
@@ -31,7 +31,7 @@
 .icon-open-locker {
   width: 15px;
   height: 15px;
-  -webkit-mask-image: url(./assets/lock_open-black-18dp.svg);
+  -webkit-mask-image: url(./assets/lock-b.svg);
   -webkit-mask-size: cover;
   background-color: rgba(255, 255, 255, 0.6);
 }
