@@ -1,0 +1,70 @@
+.icon {
+  display: inline-block;
+  background-size: cover;
+  -webkit-app-region: no-drag;
+}
+
+.drag {
+  -webkit-app-region: drag;
+}
+
+.no-drag {
+  -webkit-app-region: no-drag;
+}
+
+.icon-close {
+  width: 15px;
+  height: 15px;
+  -webkit-mask-image: url(./assets/close-black-18dp.svg);
+  -webkit-mask-size: cover;
+  background-color: rgba(255, 255, 255, 0.6);
+}
+
+.icon-locker {
+  width: 15px;
+  height: 15px;
+  -webkit-mask-image: url(./assets/lock-black-18dp.svg);
+  -webkit-mask-size: cover;
+  background-color: rgba(255, 255, 255, 0.6);
+}
+
+.icon-open-locker {
+  width: 15px;
+  height: 15px;
+  -webkit-mask-image: url(./assets/lock_open-black-18dp.svg);
+  -webkit-mask-size: cover;
+  background-color: rgba(255, 255, 255, 0.6);
+}
+
+.icon-color-picker {
+  width: 15px;
+  height: 15px;
+  -webkit-mask-image: url(./assets/color_lens-black-18dp.svg);
+  -webkit-mask-size: cover;
+  background-color: rgba(255, 255, 255, 0.6);
+}
+
+.icon-setting {
+  width: 15px;
+  height: 15px;
+  -webkit-mask-image: url(./assets/settings-24px.svg);
+  -webkit-mask-size: cover;
+  background-color: rgba(255, 255, 255, 0.6);
+}
+
+.down-effect {
+  position: relative;
+  transform: translateY(0px);
+  transition: transform 500ms ease;
+}
+
+.down-effect:hover {
+}
+
+.down-effect:active {
+  transform: translateY(10px);
+}
+
+.text {
+  color: #ffffff;
+}
