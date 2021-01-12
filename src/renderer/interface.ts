@@ -3,3 +3,11 @@ export interface BgColorProp {
   stageColor: string;
   videoItemColor: string;
 }
+
+export interface VideoProp { 
+  video_review: number;
+  pic: string;
+  title: string;
+  play: string;
+  comment: number;
+}

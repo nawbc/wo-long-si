@@ -1,7 +1,7 @@
 html {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   font-size: 4vw;
-  color: rgba(255, 255, 255, 0.8);
+  color: #ffffff;
 }
 
 body {
@@ -140,6 +140,7 @@ body {
   align-self: flex-start;
   background-size: contain;
   background-repeat: no-repeat;
+  opacity: 0.8;
 }
 
 .video-content{

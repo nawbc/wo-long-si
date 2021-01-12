@@ -3,13 +3,14 @@
   "productName": "bilibili-up",
   "version": "1.0.0",
   "description": "My Electron application description",
-  "main": ".webpack/main",
+  "main": ".webpack/main/index.js",
   "scripts": {
     "start": "electron-forge start",
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",
-    "lint": "eslint --ext .ts ."
+    "lint": "eslint --ext .ts .",
+    "release": "npm run package && node ./release.js"
   },
   "keywords": [],
   "author": {
@@ -99,7 +100,6 @@
     "cookie": "^0.4.1",
     "electron-squirrel-startup": "^1.0.0",
     "got": "^11.8.1",
-    "tinycolor2": "^1.4.2",
-    "win-win-api": "0.0.4"
+    "tinycolor2": "^1.4.2"
   }
 }

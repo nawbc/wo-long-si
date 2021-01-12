@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-import { app, BrowserWindow, Tray, Menu, screen, session, dialog } from 'electron';
-import { CPP, WinWin } from 'win-win-api';
+import { app, BrowserWindow, Tray, Menu, screen, session, protocol } from 'electron';
+// import { CPP, WinWin } from 'win-win-api';
 // const { SetWindowPos, GetDesktopWindow, SetParent } = new WinWin().user32();
 
 // const icon = require('./icons/png/16x16.png');
@@ -28,6 +28,11 @@ if (require('electron-squirrel-startup')) { // eslint-disable-line global-requir
 //   mainWindow.setPosition(width - 310, height - 610, true);
 // };
 
+protocol.registerSchemesAsPrivileged([
+  { scheme: 'http', privileges: { bypassCSP: true } },
+  { scheme: 'https', privileges: { bypassCSP: true } }
+]);
+
 const createWindow = (): void => {
 
   const { width, height } = screen.getPrimaryDisplay().workAreaSize;
@@ -43,8 +48,9 @@ const createWindow = (): void => {
     webPreferences: {
       nodeIntegration: true,
       nodeIntegrationInWorker: true,
-      webSecurity: false,
       enableRemoteModule: true,
+      webSecurity: false,
+      allowRunningInsecureContent: true,
     }
   });
 
@@ -54,14 +60,6 @@ const createWindow = (): void => {
   });
 
   // mainWindow.loadFile(MAIN_WINDOW_WEBPACK_ENTRY)
-  console.log(MAIN_WINDOW_WEBPACK_ENTRY);
-  dialog.showMessageBox({
-    type:'info',
-    title: 'message',
-    message: MAIN_WINDOW_WEBPACK_ENTRY,
-    buttons:['ok','cancel']
-  })
-  
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
 
   // const mainHwnd = bufferCastInt32(mainWindow.getNativeWindowHandle());
@@ -74,16 +72,11 @@ const createWindow = (): void => {
     mainWindow.show();
   });
 
-  mainWindow.webContents.openDevTools({
+  isProduction || mainWindow.webContents.openDevTools({
     mode: 'detach'
   });
 
   mainWindow.setSkipTaskbar(true);
-
-  mainWindow.on('resize', () => {
-    const [width, height] = mainWindow.getSize();
-    mainWindow.webContents.executeJavaScript(`localStorage.setItem('windowSize', [${width}, ${height}])`);
-  });
 
   mainWindow.setAlwaysOnTop(true, 'main-menu');
 
@@ -98,8 +91,6 @@ const createWindow = (): void => {
       }
     });
 
-
-  console.log(app.getAppPath())
   tray = new Tray(resolve(app.getAppPath(), '.webpack/main/icons/png/16x16.png'));
 
   const contextMenu = Menu.buildFromTemplate([

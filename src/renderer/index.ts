@@ -3,7 +3,7 @@ import './preset.css';
 import got from 'got';
 import { remote } from 'electron';
 import tinycolor from 'tinycolor2';
-import { BgColorProp } from './interface';
+import { VideoProp } from './interface';
 import cookie from 'cookie';
 
 declare const SETTING_WINDOW_WEBPACK_ENTRY: any;
@@ -16,6 +16,7 @@ const eleLocker = document.querySelector('.action-locker') as HTMLElement;
 const eleSetting = document.querySelector('.icon-setting') as HTMLElement;
 const eleBasicInfoWrapper = document.querySelector('.basic-info-wrapper') as HTMLElement;
 const eleVideoList = document.querySelector('.video-list') as HTMLElement;
+const eleClose = document.querySelector('.icon-close') as HTMLElement;
 const BILIBILI_API = 'https://api.bilibili.com';
 
 const mainWindow = remote.getCurrentWindow();
@@ -25,16 +26,15 @@ const createLoginWindow = (): Promise<string> => new Promise((resolve, reject) =
     const mainWindow = new remote.BrowserWindow();
     mainWindow.loadURL('https://passport.bilibili.com/login?gourl=https://space.bilibili.com');
     mainWindow.on('close', async () => {
-      const val: string = await mainWindow.webContents.executeJavaScript('document.cookie');
-      localStorage.setItem('bilibiliCookie', val);
-      console.log(val);
-      resolve(val); 
+      const cookies = await remote.session.defaultSession.cookies.get({url: 'https://space.bilibili.com'});
+      const cookieString = cookies.map((val) => `${val.name}=${val.value}`).join(';')
+      localStorage.setItem('bilibiliCookie', cookieString);
+      resolve(cookieString); 
     })
   } catch (e) {
     reject(e);
   }
 });
-
 
 const reqApi = got.extend({
   prefixUrl: BILIBILI_API,
@@ -46,6 +46,9 @@ const reqApi = got.extend({
         if (cookie) {
           options.headers['Cookie'] = cookie;
           options.headers['Referer'] = 'https://www.bilibili.com/';
+          options.headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36';
+          options.headers['Connection'] = 'keep-alive';
+          options.headers['Origin'] = 'https://message.bilibili.com';
         } else {
           alert('先登录');
         }
@@ -64,19 +67,63 @@ const setBgColor = function (bar: string, stage: string, item: string) {
   eleStage.style.backgroundColor = stage;
 }
 
-const initTheme = function () {
-  const color = localStorage.getItem('bgColor');
-  
-  if (color) {
-    const { dragBarColor, stageColor, videoItemColor } = JSON.parse(color) as BgColorProp;
+const setTheme = function () {  
+  const { dragBarColor, stageColor, videoItemColor , fontColor} = localStorage;
+  if (dragBarColor && stageColor && videoItemColor) {
     setBgColor(dragBarColor, stageColor, videoItemColor);
   } else {
     setBgColor('rgba(0, 0, 0, 0.6)', 'rgba(0, 0, 0, 0.4)', 'rgba(0, 0, 0, 0.24)');
   }
+
+  document.documentElement.style.color = fontColor ?? '#ffffff';
 }
 
 
+const changeBgColor = function (value: string) { 
+  const color = tinycolor(value);
+  const tmp = parseFloat(localStorage.getItem('bgOpacity'));
+  const eleVideoItems = document.querySelectorAll('.video-item')  as NodeListOf<HTMLElement>;
+  const op = tmp ? tmp : 0.4;
+  color.setAlpha(0.6);
+  eleDragHolder.style.backgroundColor = color.toRgbString();
+  color.setAlpha(op);
+  eleStage.style.backgroundColor = color.toRgbString();
+  if (eleVideoItems) { 
+    color.setAlpha(op * 0.6);
+    eleVideoItems.forEach((ele) => {
+      ele.style.backgroundColor = color.toRgbString();
+    });
+  }
+
+  localStorage.setItem('dragBarColor', eleDragHolder.style.backgroundColor);
+  localStorage.setItem('stageColor', eleStage.style.backgroundColor);
+  localStorage.setItem('videoItemColor', color.toRgbString());
+}
+
+const initWindow = function () { 
+  const { windowSize, windowPos } = localStorage;
+  if (windowSize) {
+    const [w, h] = windowSize.split(',');
+    mainWindow.setSize(parseFloat(w), parseFloat(h));
+  } else { 
+    mainWindow.setSize(308, 268);
+  }
+
+  if (windowPos) {
+    const [x, y] = windowPos.split(',');
+    mainWindow.setPosition(parseFloat(x), parseFloat(y));
+  }
+}
+
 const initElementsEvent = function () {
+  
+  mainWindow.on('move', () => {
+    localStorage.setItem('windowPos', mainWindow.getPosition().join(','));
+  });
+  
+  mainWindow.on('resize', () => {
+    localStorage.setItem('windowSize', mainWindow.getSize().join(','));
+  });
 
   eleStage.addEventListener('mouseenter', () => {
     eleLocker.classList.contains('icon-locker') && mainWindow.setIgnoreMouseEvents(true, { forward: true })
@@ -87,25 +134,7 @@ const initElementsEvent = function () {
   })
 
   eleColorInput.addEventListener('input', (e: any) => {
-    const color = tinycolor(e.target.value);
-    const tmp = parseFloat(localStorage.getItem('bg-opacity'));
-    const eleVideoItems = document.querySelectorAll('.video-item')  as NodeListOf<HTMLElement>;
-    const op = tmp ?  tmp : 0.4;
-    color.setAlpha(0.6);
-    eleDragHolder.style.backgroundColor = color.toRgbString();
-    color.setAlpha(op);
-    eleStage.style.backgroundColor = color.toRgbString();
-    if (eleVideoItems) { 
-      color.setAlpha(op * 0.6);
-      eleVideoItems.forEach((ele) => {
-        ele.style.backgroundColor = color.toRgbString();
-      });
-    }
-    localStorage.setItem('bgColor', JSON.stringify({
-      dragBarColor: eleDragHolder.style.backgroundColor,
-      stageColor: eleStage.style.backgroundColor,
-      videoItemColor: color.toRgbString(),
-    }));
+    changeBgColor(e.target.value);
   });
 
   eleLocker.addEventListener('click', () => {
@@ -124,14 +153,21 @@ const initElementsEvent = function () {
   eleSetting.addEventListener('click', () => {
     const settingWindow = new remote.BrowserWindow();
     settingWindow.loadURL(SETTING_WINDOW_WEBPACK_ENTRY);
-    // settingWindow.setMenu(null);
+    settingWindow.on('close', (e) => {
+      setTheme();
+      changeBgColor(eleStage.style.backgroundColor);
+    });
+  });
+
+  eleClose.addEventListener('click', () => {
+    remote.app.exit(0);
   });
 }
 
-const reqUserCard = async function (id: string): Promise<Record<string, any>> {
-  const res = await reqApi.get('x/web-interface/card', {
-    searchParams: {
-      'mid': id
+const reqUserCard = async function (): Promise<Record<string, any>> {
+  const res = await reqApi.get('x/space/myinfo', {
+    headers: {
+      'Cookies': localStorage.getItem('bilibiliCookie')
     }
   });
   return res.body as any;
@@ -140,50 +176,46 @@ const reqUserCard = async function (id: string): Promise<Record<string, any>> {
 const reqUserSpace = async function (id: string): Promise<Record<string, any>> {
   const res = await reqApi.get('x/space/arc/search', {
     searchParams: {
-      'mid': id
+      'mid': id,
+      'pn': 1,
+      'ps': 25,
+    },
+    headers: {
+      'Referer': 'https://space.bilibili.com/'
     }
   });
+
   return res.body as any;
 }
 
-const renderUserBasicInfo = async function (id: string) {
+const renderUserBasicInfo = async function () {
   
-  const resUserInfo = await reqUserCard(id);
+  const resUserInfo = await reqUserCard();
 
   if (resUserInfo?.data) {
     const info = resUserInfo?.data;
     eleUserBase.innerHTML = `
-        <img src='${info.card.face}'>
-        <div>${info.card.name}</div>
+        <img src='${info.face}'>
+        <div>${info.name}</div>
       `;
     
     eleBasicInfoWrapper.innerHTML = `
       <div class="icon bilibili"></div>
       <div>
         <div class="level">
-          等级: <span>Lv${info.card.level_info.current_level}</span>
+          等级: <span>Lv${info.level}</span>
         </div>
         <div style="height:5px"></div>
         <div>
-          粉丝: ${info.card.fans}
+          粉丝: ${info.follower}
         </div>
         <div style="height:5px"></div>
         <div>
-          关注: ${info.card.attention}
+          硬币: ${Math.floor(info.coins ?? 0)}
         </div>
       </div>
     `;
-  } else {
-    alert('出错');
   }
-}
-
-interface VideoProp { 
-  video_review: number;
-  pic: string;
-  title: string;
-  play: string;
-  comment: number;
 }
 
 const renderUserVideos = async function (id: string) {
@@ -194,7 +226,7 @@ const renderUserVideos = async function (id: string) {
       return renderVideoItem(data);
     }).join('<br>') + '<div style="height: 80px"/>';
   } else { 
-    alert('出错');
+    alert('视频出错');
   }
 }
 
@@ -203,7 +235,7 @@ const renderVideoItem = function (data: VideoProp) {
     <div class="video-item">
       <div 
         class="video-cover"
-        style="background-image: url(${data.pic})"
+        style="background-image: url(https:${data.pic})"
       >
       </div>
       <div class="video-content">
@@ -218,22 +250,34 @@ const renderVideoItem = function (data: VideoProp) {
   `
 }
 
-const main = async function () {
-  initElementsEvent();
-  const bc = localStorage.getItem('bilibiliCookie');
-  let bilibiliCookie;
-  if (bc) {
-    bilibiliCookie = cookie.parse(bc);
-  } else {
-    const cookieString = await createLoginWindow();
-    bilibiliCookie = cookie.parse(cookieString);
-  }
-
-  console.log(bilibiliCookie);
-  
-  await renderUserBasicInfo(bilibiliCookie.DedeUserID);
+const renderStateView = async function (bilibiliCookie: Record<string, any>) { 
+  await renderUserBasicInfo();
   await renderUserVideos(bilibiliCookie.DedeUserID);
-  initTheme();
+  setTheme();
+}
+
+const main = async function () {
+  try {
+    initElementsEvent();
+    initWindow();
+    const { bilibiliCookie: bc, refreshInterval = 10  } = localStorage;
+    
+    let bilibiliCookie: any;
+    if (bc) {
+      bilibiliCookie = cookie.parse(bc);
+    } else {
+      const cookieString = await createLoginWindow();
+      bilibiliCookie = cookie.parse(cookieString);
+    }
+    
+    await renderStateView(bilibiliCookie);
+  
+    setInterval(async () => {
+      await renderStateView(bilibiliCookie);
+    }, refreshInterval  * 1000);
+  } catch (e) { 
+    alert(e);
+  }
 }
 
 
