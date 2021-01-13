@@ -12,7 +12,6 @@ const isProduction = process.env.NODE_ENV  === 'production';
 declare const MAIN_WINDOW_WEBPACK_ENTRY: any;
 let tray: Tray;
 let mainWindow: BrowserWindow;
-
 // const HWND_BOTTOM = 1;
 
 // const desktopHwnd = GetDesktopWindow();
@@ -27,11 +26,6 @@ if (require('electron-squirrel-startup')) { // eslint-disable-line global-requir
 //   mainWindow.setAlwaysOnTop(true);
 //   mainWindow.setPosition(width - 310, height - 610, true);
 // };
-
-protocol.registerSchemesAsPrivileged([
-  { scheme: 'http', privileges: { bypassCSP: true } },
-  { scheme: 'https', privileges: { bypassCSP: true } }
-]);
 
 const createWindow = (): void => {
 

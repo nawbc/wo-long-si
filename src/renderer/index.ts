@@ -4,7 +4,7 @@ import got from 'got';
 import { remote } from 'electron';
 import tinycolor from 'tinycolor2';
 import { VideoProp } from './interface';
-import cookie from 'cookie';
+import open from 'open';
 
 declare const SETTING_WINDOW_WEBPACK_ENTRY: any;
 
@@ -14,27 +14,27 @@ const eleColorInput = document.querySelector('.color-picker input') as HTMLEleme
 const eleUserBase = document.querySelector('.user-base') as HTMLElement;
 const eleLocker = document.querySelector('.action-locker') as HTMLElement;
 const eleSetting = document.querySelector('.icon-setting') as HTMLElement;
-const eleBasicInfoWrapper = document.querySelector('.basic-info-wrapper') as HTMLElement;
+// const eleBasicInfoWrapper = document.querySelector('.basic-info-wrapper') as HTMLElement;
 const eleVideoList = document.querySelector('.video-list') as HTMLElement;
 const eleClose = document.querySelector('.icon-close') as HTMLElement;
 const BILIBILI_API = 'https://api.bilibili.com';
 
 const mainWindow = remote.getCurrentWindow();
 
-const createLoginWindow = (): Promise<string> => new Promise((resolve, reject) => {
-  try {
-    const mainWindow = new remote.BrowserWindow();
-    mainWindow.loadURL('https://passport.bilibili.com/login?gourl=https://space.bilibili.com');
-    mainWindow.on('close', async () => {
-      const cookies = await remote.session.defaultSession.cookies.get({url: 'https://space.bilibili.com'});
-      const cookieString = cookies.map((val) => `${val.name}=${val.value}`).join(';')
-      localStorage.setItem('bilibiliCookie', cookieString);
-      resolve(cookieString); 
-    })
-  } catch (e) {
-    reject(e);
-  }
-});
+// const createLoginWindow = (): Promise<string> => new Promise((resolve, reject) => {
+//   try {
+//     const mainWindow = new remote.BrowserWindow();
+//     mainWindow.loadURL('https://passport.bilibili.com/login?gourl=https://space.bilibili.com');
+//     mainWindow.on('close', async () => {
+//       const cookies = await remote.session.defaultSession.cookies.get({url: 'https://space.bilibili.com'});
+//       const cookieString = cookies.map((val) => `${val.name}=${val.value}`).join(';')
+//       localStorage.setItem('bilibiliCookie', cookieString);
+//       resolve(cookieString); 
+//     })
+//   } catch (e) {
+//     reject(e);
+//   }
+// });
 
 const reqApi = got.extend({
   prefixUrl: BILIBILI_API,
@@ -164,10 +164,10 @@ const initElementsEvent = function () {
   });
 }
 
-const reqUserCard = async function (): Promise<Record<string, any>> {
-  const res = await reqApi.get('x/space/myinfo', {
-    headers: {
-      'Cookies': localStorage.getItem('bilibiliCookie')
+const reqUserCard = async function (id: string): Promise<Record<string, any>> {
+  const res = await reqApi.get('x/space/acc/info', {
+    searchParams: {
+      mid: id
     }
   });
   return res.body as any;
@@ -178,7 +178,7 @@ const reqUserSpace = async function (id: string): Promise<Record<string, any>> {
     searchParams: {
       'mid': id,
       'pn': 1,
-      'ps': 25,
+      'ps': 100,
     },
     headers: {
       'Referer': 'https://space.bilibili.com/'
@@ -190,7 +190,7 @@ const reqUserSpace = async function (id: string): Promise<Record<string, any>> {
 
 const renderUserBasicInfo = async function () {
   
-  const resUserInfo = await reqUserCard();
+  const resUserInfo = await reqUserCard('258457966');
 
   if (resUserInfo?.data) {
     const info = resUserInfo?.data;
@@ -198,23 +198,6 @@ const renderUserBasicInfo = async function () {
         <img src='${info.face}'>
         <div>${info.name}</div>
       `;
-    
-    eleBasicInfoWrapper.innerHTML = `
-      <div class="icon bilibili"></div>
-      <div>
-        <div class="level">
-          等级: <span>Lv${info.level}</span>
-        </div>
-        <div style="height:5px"></div>
-        <div>
-          粉丝: ${info.follower}
-        </div>
-        <div style="height:5px"></div>
-        <div>
-          硬币: ${Math.floor(info.coins ?? 0)}
-        </div>
-      </div>
-    `;
   }
 }
 
@@ -225,14 +208,26 @@ const renderUserVideos = async function (id: string) {
     eleVideoList.innerHTML =  info?.list?.vlist.map((data:VideoProp) => {
       return renderVideoItem(data);
     }).join('<br>') + '<div style="height: 80px"/>';
+    const eleVideoItems = document.querySelectorAll('.video-item') as NodeListOf<HTMLElement>;
+    eleVideoItems.forEach((ele) => {
+      ele.addEventListener('click', async (e: any) => { 
+        const item: HTMLElement = e.path.find((ele: HTMLElement) => { return ele.className === 'video-item' });
+        await open(item.dataset.url);
+      })
+    }, true);
   } else { 
     alert('视频出错');
   }
 }
 
+
+const clickVideo = function (e: any) { 
+  console.log(1111);
+}
+
 const renderVideoItem = function (data: VideoProp) { 
   return `
-    <div class="video-item">
+    <div class="video-item" data-url="https://www.bilibili.com/video/${data.bvid}">
       <div 
         class="video-cover"
         style="background-image: url(https:${data.pic})"
@@ -245,35 +240,29 @@ const renderVideoItem = function (data: VideoProp) {
           <div>评论: ${data.comment}</div>
           <div>弹幕: ${data.video_review}</div>
         </div>
+        <div class="video-info">
+          <div>时长: ${data.length}</div>
+        </div>
+        <div
+          class="create-time"
+        >${new Date(data.created * 1000).toLocaleString()}</div>
       </div>
     </div>
   `
-}
-
-const renderStateView = async function (bilibiliCookie: Record<string, any>) { 
-  await renderUserBasicInfo();
-  await renderUserVideos(bilibiliCookie.DedeUserID);
-  setTheme();
 }
 
 const main = async function () {
   try {
     initElementsEvent();
     initWindow();
-    const { bilibiliCookie: bc, refreshInterval = 10  } = localStorage;
-    
-    let bilibiliCookie: any;
-    if (bc) {
-      bilibiliCookie = cookie.parse(bc);
-    } else {
-      const cookieString = await createLoginWindow();
-      bilibiliCookie = cookie.parse(cookieString);
-    }
-    
-    await renderStateView(bilibiliCookie);
-  
+    const {  refreshInterval = 10  } = localStorage;
+    await renderUserBasicInfo();
+    await renderUserVideos('258457966');
+    setTheme();
+
     setInterval(async () => {
-      await renderStateView(bilibiliCookie);
+      await renderUserVideos('258457966');
+      setTheme();
     }, refreshInterval  * 1000);
   } catch (e) { 
     alert(e);

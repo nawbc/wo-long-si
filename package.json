@@ -1,7 +1,7 @@
 {
-  "name": "bilibili-up",
-  "productName": "bilibili-up",
-  "version": "1.0.0",
+  "name": "wo-long-si",
+  "productName": "卧龙寺 for Desktop",
+  "version": "0.0.1",
   "description": "My Electron application description",
   "main": ".webpack/main/index.js",
   "scripts": {
@@ -12,6 +12,7 @@
     "lint": "eslint --ext .ts .",
     "release": "npm run package && node ./release.js"
   },
+  
   "keywords": [],
   "author": {
     "name": "sewerganger",
@@ -36,7 +37,7 @@
         {
           "name": "@electron-forge/maker-squirrel",
           "config": {
-            "name": "bilibili-up"
+            "name": "卧龙寺 for Desktop"
           }
         },
         {
@@ -98,8 +99,11 @@
   "dependencies": {
     "@types/tinycolor2": "^1.4.2",
     "cookie": "^0.4.1",
+    "electron-log": "^4.3.1",
     "electron-squirrel-startup": "^1.0.0",
+    "electron-updater": "^4.3.5",
     "got": "^11.8.1",
+    "open": "^7.3.1",
     "tinycolor2": "^1.4.2"
   }
 }

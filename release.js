@@ -12,8 +12,8 @@ const Platform = builder.Platform;
 		targets: Platform.WINDOWS.createTarget(['nsis']),
 		publish: "never",
 		config: {
-			productName: 'bilibili-up',
-			appId: 'com.sewerganger.bilibiliup',
+			productName: '卧龙寺 for Desktop',
+			appId: 'com.sewerganger.wolongsi',
 			icon: './src/main/icons/win/icon.ico',
 			files: [
 				'!node_modules',
@@ -58,5 +58,6 @@ const Platform = builder.Platform;
 		.catch((err) => {
 			console.log(err);
 		});
+		// 397b778fe3bed8596a54b816854ba868a24579dd
 
 })();

@@ -10,4 +10,7 @@ export interface VideoProp {
   title: string;
   play: string;
   comment: number;
+  length: string;
+  created: number;
+  bvid: string;
 }

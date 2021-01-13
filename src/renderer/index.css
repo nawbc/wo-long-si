@@ -126,11 +126,22 @@ body {
 
 .video-item{
   /* height: 5rem; */
+  cursor: pointer;
   width: 100vw;
   align-items: center;
   display: flex;
   padding: 8px;
+  will-change: transform;
+  transform: scale(1);
+  transition: transform 300ms ease;
 }
+
+.video-item:hover{}
+
+.video-item:active{
+  transform: scale(0.9);
+}
+
 
 .video-cover{
   min-height: 4rem;
@@ -143,6 +154,10 @@ body {
   opacity: 0.8;
 }
 
+.video-name{
+  margin-bottom: 10px;
+}
+
 .video-content{
   display: flex;
   flex-direction: column;
@@ -151,7 +166,15 @@ body {
 }
 
 .video-info{
-  margin-top: 10px;
   display: inline-flex;
   justify-content: space-between;
+}
+
+.video-info-start{
+  justify-content: flex-start;
+}
+
+.create-time{
+  margin-top: 10px;
+  font-size: 0.8rem;
 }
