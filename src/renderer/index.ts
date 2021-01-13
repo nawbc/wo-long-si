@@ -42,21 +42,14 @@ const reqApi = got.extend({
   hooks: {
     beforeRequest: [
       options => {
-        const cookie = localStorage.getItem('bilibiliCookie');
-        if (cookie) {
-          options.headers['Cookie'] = cookie;
-          options.headers['Referer'] = 'https://www.bilibili.com/';
-          options.headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36';
-          options.headers['Connection'] = 'keep-alive';
-          options.headers['Origin'] = 'https://message.bilibili.com';
-        } else {
-          alert('先登录');
-        }
+        options.headers['Referer'] = 'https://www.bilibili.com/';
+        options.headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36';
+        options.headers['Connection'] = 'keep-alive';
+        options.headers['Origin'] = 'https://message.bilibili.com';
       }
     ]
   }
 })
-
 
 const setBgColor = function (bar: string, stage: string, item: string) {
   const eleVideoItems = document.querySelectorAll('.video-item') as NodeListOf<HTMLElement>;

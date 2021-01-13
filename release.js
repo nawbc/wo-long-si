@@ -48,6 +48,12 @@ const Platform = builder.Platform;
 				uninstallerIcon: path.resolve(__dirname, './src/main/icons/win/icon.ico'),
 				deleteAppDataOnUninstall: true
 			},
+			// publish: {
+			// 	provider: 'github',
+			// 	repo: 'wo-long-si',
+			// 	owner: 'sewerganger',
+			// 	releaseType: 'release',
+			// },
 			asar: false,
 			artifactName: '${name}-setup-${version}.${ext}'
 		}

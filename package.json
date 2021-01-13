@@ -12,7 +12,9 @@
     "lint": "eslint --ext .ts .",
     "release": "npm run package && node ./release.js"
   },
-  
+  "repository": {
+    "url": "https://github.com/sewerganger/wo-long-si.git"
+  },
   "keywords": [],
   "author": {
     "name": "sewerganger",
