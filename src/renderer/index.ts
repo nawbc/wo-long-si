@@ -213,11 +213,6 @@ const renderUserVideos = async function (id: string) {
   }
 }
 
-
-const clickVideo = function (e: any) { 
-  console.log(1111);
-}
-
 const renderVideoItem = function (data: VideoProp) { 
   return `
     <div class="video-item" data-url="https://www.bilibili.com/video/${data.bvid}">
